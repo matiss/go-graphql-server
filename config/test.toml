@@ -1,0 +1,18 @@
+app_name = "go-graphql-server"
+version = "1.0.0"
+
+[auth]
+# Auth token TTL in seconds
+token_ttl = 3600
+token_renew_ttl = 86400
+
+[pg]
+address = "localhost:32772"
+database = "parts_dev"
+user = "admin"
+password = "12345678"
+pool_size = 5
+
+[http]
+address = "127.0.0.1:3035"
+rate_limit = 120.0

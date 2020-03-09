@@ -1,0 +1,64 @@
+## Go GraphQL API Server
+
+This project aims to use [graph-gophers/graphql-go](https://github.com/graph-gophers/graphql-go) to build a GraphQL API server.
+
+    
+#### Requirement:
+
+1. Postgres database
+2. Golang
+3. GNU Make (Optional)
+
+#### Usage:
+
+1. Create database in Postgres and update server.toml configuration and run migrations
+    ```
+    make migrate
+    ```
+
+    OR 
+
+    ```
+    go run ./cmd/migrate/main.go migrate
+    ```
+
+2. Install go-bindata
+    ```
+    go get -u github.com/go-bindata/go-bindata...
+    ```
+
+3. Run the following command at root directory to generate Go code from .graphql file
+    ```
+    go generate ./schema
+    ```
+
+    OR
+
+    ```
+    make schema
+    ```
+    There would be bindata.go generated under `schema` folder
+
+4. Start the server (Ensure your postgres database is live and its setting in server.toml is correct)
+    ```
+    make run
+    ```
+
+    OR
+
+    ```
+    go run ./cmd/server/main.go -c ./config/server.toml
+    ```
+
+#### Test:
+
+- Run Unit Tests
+    ```
+    make test
+    ```
+
+    OR
+
+    ```
+    go test -v ./...
+    ```

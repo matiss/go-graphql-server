@@ -1,0 +1,11 @@
+type User {
+  id: ID!
+  userID: Int
+  email: String
+  password: String
+  name: String
+  status: Int!
+  role: Int
+  createdAt: Time
+  updatedAt: Time
+}
