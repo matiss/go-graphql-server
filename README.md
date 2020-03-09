@@ -2,6 +2,13 @@
 
 This project aims to use [graph-gophers/graphql-go](https://github.com/graph-gophers/graphql-go) to build a GraphQL API server.
 
+#### RoadMap:
+
+- [x] Integrated with pg
+- [x] Integrated with graphql-go
+- [x] Use go-bindata to generate Go code from .graphql file
+- [x] Add authentication & authorization
+- [x] Add simple unit test cases
     
 #### Requirement:
 
