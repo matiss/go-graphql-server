@@ -5,6 +5,7 @@ This project aims to use [graph-gophers/graphql-go](https://github.com/graph-gop
 #### RoadMap:
 
 - [x] Integrated with pg
+- [x] Database migrations
 - [x] Integrated with graphql-go
 - [x] Use go-bindata to generate Go code from .graphql file
 - [x] Add authentication & authorization
