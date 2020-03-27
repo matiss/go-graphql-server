@@ -52,7 +52,7 @@ func Run(configPath string) {
 	// CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAcceptEncoding, echo.HeaderAccessControlMaxAge},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAcceptEncoding, echo.HeaderAccessControlMaxAge, echo.HeaderAuthorization},
 	}))
 
 	// Root handler
@@ -77,9 +77,6 @@ func Run(configPath string) {
 
 	// Handle robots.txt file
 	e.GET("/robots.txt", RobotsTXTHandler, tollbooth_echo.LimitHandler(rateLimiter))
-
-	// Stop here if its Preflighted OPTIONS request
-	e.OPTIONS("/*url", HTTPOptions)
 
 	// Start server
 	go func() {

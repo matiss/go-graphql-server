@@ -18,9 +18,3 @@ func RootHandler(c echo.Context) error {
 func RobotsTXTHandler(c echo.Context) error {
 	return c.String(http.StatusBadRequest, "User-agent: *\nDisallow: /")
 }
-
-func HTTPOptions(c echo.Context) error {
-	c.Response().Header().Add("Access-Control-Max-Age", "600")
-
-	return c.String(200, "")
-}
