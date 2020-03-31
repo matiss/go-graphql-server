@@ -10,10 +10,6 @@ import (
 	"github.com/matiss/go-graphql-server/utils"
 )
 
-const (
-	defaultListFetchSize = 10
-)
-
 type UserService struct {
 	pgdb *pg.DB
 }
@@ -35,19 +31,30 @@ func (u *UserService) FindByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserService) List(first *int32) ([]*models.User, error) {
-	var fetchSize int32
-	if first == nil || *first == 0 {
+func (u *UserService) List(limit int, offset int, userRole int) ([]*models.User, error) {
+	fetchSize := limit
+
+	// Limit fetch size
+	if fetchSize == 0 {
 		fetchSize = defaultListFetchSize
-	} else {
-		fetchSize = *first
+	} else if fetchSize > maxListFetchSize {
+		fetchSize = maxListFetchSize
 	}
 
 	users := make([]*models.User, 0)
 
-	_, err := u.pgdb.Query(&users, `SELECT * FROM users ORDER BY created_at DESC LIMIT ?;`, fetchSize)
-	if err != nil {
-		return nil, err
+	if userRole > 0 {
+		// Fetch users by role
+		_, err := u.pgdb.Query(&users, `SELECT * FROM users WHERE role = ? ORDER BY created_at DESC LIMIT ? OFFSET ?;`, userRole, fetchSize, offset)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Fetch all users
+		_, err := u.pgdb.Query(&users, `SELECT * FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?;`, fetchSize, offset)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return users, nil
@@ -124,12 +131,21 @@ func (u *UserService) UpdateLogin(user *models.User, ipText string) error {
 	return nil
 }
 
-func (u *UserService) Count() (int, error) {
+func (u *UserService) Count(role int) (int, error) {
 	var count int
 
-	_, err := u.pgdb.Query(pg.Scan(&count), "SELECT count(*) FROM users")
-	if err != nil {
-		return 0, err
+	if role > 0 {
+		// Count users by role
+		_, err := u.pgdb.Query(pg.Scan(&count), "SELECT count(*) FROM users WHERE role = ?;", role)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		// Count all users
+		_, err := u.pgdb.Query(pg.Scan(&count), "SELECT count(*) FROM users;")
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	return count, nil

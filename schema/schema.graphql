@@ -5,7 +5,7 @@ schema {
 
 type Query {
   user(email: String!): User
-  users(first: Int,  after: String): [User]
+  users(limit: Int, offset: Int, role: Int): UsersConnection!
 }
 
 type Mutation {

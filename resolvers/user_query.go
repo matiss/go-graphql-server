@@ -22,25 +22,39 @@ func (r *Resolver) User(ctx context.Context, args struct{ Email string }) (*user
 }
 
 func (r *Resolver) Users(ctx context.Context, args struct {
-	First *int32
-	After *string
-}) (*[]*userResolver, error) {
+	Limit  *int32
+	Offset *int32
+	Role   *int32
+}) (*usersConnectionResolver, error) {
 	// Auth
-	if isAuthorized, err := utils.IsAuthorized(ctx, utils.AuthUser); !isAuthorized {
+	if isAuthorized, err := utils.IsAuthorized(ctx, utils.AuthAdmin); !isAuthorized {
 		return nil, err
 	}
 
-	users, err := r.UserService.List(args.First)
+	limit := 0
+	if args.Limit != nil {
+		limit = int(*args.Limit)
+	}
+
+	offset := 0
+	if args.Offset != nil {
+		offset = int(*args.Offset)
+	}
+
+	userRole := 0
+	if args.Role != nil {
+		userRole = int(*args.Role)
+	}
+
+	users, err := r.UserService.List(limit, offset, userRole)
 	if err != nil {
 		return nil, err
 	}
 
-	var resolvers = make([]*userResolver, 0, len(users))
-
-	for _, user := range users {
-		resolver := &userResolver{user}
-		resolvers = append(resolvers, resolver)
+	count, err := r.UserService.Count(userRole)
+	if err != nil {
+		return nil, err
 	}
 
-	return &resolvers, nil
+	return &usersConnectionResolver{users: users, totalCount: count}, nil
 }
