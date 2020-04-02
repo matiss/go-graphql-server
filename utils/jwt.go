@@ -4,7 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func GenerateJWT(exp int64, secret []byte, userId string, authLevel AuthLevel) (string, error) {
+func GenerateJWT(exp int64, secret []byte, userId int32, authLevel AuthLevel) (string, error) {
 	t := jwt.New(jwt.SigningMethodHS256)
 
 	claims := t.Claims.(jwt.MapClaims)

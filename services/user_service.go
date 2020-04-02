@@ -20,6 +20,19 @@ func NewUserService(pgdb *pg.DB) *UserService {
 	}
 }
 
+// Find user by ID
+func (u *UserService) Find(ID int32) (*models.User, error) {
+	user := &models.User{}
+
+	_, err := u.pgdb.QueryOne(user, "SELECT * FROM users WHERE id = ?", ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// FindByEmail finds user by email
 func (u *UserService) FindByEmail(email string) (*models.User, error) {
 	user := &models.User{}
 

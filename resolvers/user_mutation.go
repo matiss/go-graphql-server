@@ -46,7 +46,7 @@ func (r *Resolver) LoginUser(ctx context.Context, args *struct {
 
 	// Create JWT token
 	exp := time.Now().Add(time.Second * time.Duration(r.TokenTTL)).Unix()
-	token, err := utils.GenerateJWT(exp, r.JWTSecret, user.Email, utils.AuthLevel(user.Role))
+	token, err := utils.GenerateJWT(exp, r.JWTSecret, user.ID, utils.AuthLevel(user.Role))
 	if err != nil {
 		return nil, err
 	}
@@ -60,25 +60,20 @@ func (r *Resolver) RenewToken(ctx context.Context) (*userLoginResolver, error) {
 		return nil, err
 	}
 
-	userID, ok := ctx.Value("userID").(string)
-	if !ok || userID == "" {
+	userID, ok := ctx.Value("userID").(int32)
+	if !ok || userID == 0 {
 		return nil, fmt.Errorf("Invalid userID")
 	}
 
-	authLevel, ok := ctx.Value("auth").(utils.AuthLevel)
-	if !ok {
-		return nil, fmt.Errorf("Invalid auth")
-	}
-
 	// Find user
-	user, err := r.UserService.FindByEmail(userID)
+	user, err := r.UserService.Find(userID)
 	if err != nil || !user.Active() {
-		return nil, fmt.Errorf("Could not find user")
+		return nil, fmt.Errorf("Could not find user with id %d", userID)
 	}
 
 	// Create JWT token
 	exp := time.Now().Add(time.Second * time.Duration(r.TokenTTL)).Unix()
-	tokenStr, err := utils.GenerateJWT(exp, r.JWTSecret, user.Email, authLevel)
+	tokenStr, err := utils.GenerateJWT(exp, r.JWTSecret, user.ID, utils.AuthLevel(user.Role))
 	if err != nil {
 		return nil, err
 	}

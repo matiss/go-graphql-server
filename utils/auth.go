@@ -37,16 +37,19 @@ func IsAuthorized(ctx context.Context, requiredLevel AuthLevel) (bool, error) {
 func SetAuth(ctx context.Context, authToken string, jwtSecret *[]byte) context.Context {
 	// Default access to public/anonymous
 	authLevel := AuthAnonymous
-	userID := ""
+	var userID int32 = 0
 
 	if len(authToken) > 7 {
 		authToken = authToken[7:]
 
 		token, err := ParseJWT(jwtSecret, authToken)
 		if err == nil && token.Valid {
-			// Get userID
 			claims := token.Claims.(jwt.MapClaims)
-			userID, _ = claims["sub"].(string)
+
+			// Get userID
+			if ID, ok := claims["sub"].(float64); ok {
+				userID = int32(ID)
+			}
 
 			// Set auth level
 			if lvl, ok := claims["auth"].(float64); ok {

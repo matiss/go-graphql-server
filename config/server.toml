@@ -7,7 +7,7 @@ token_ttl = 3600
 token_renew_ttl = 86400
 
 [pg]
-address = "localhost:32772"
+address = "localhost:32768"
 database = "parts_dev"
 user = "admin"
 password = "12345678"
