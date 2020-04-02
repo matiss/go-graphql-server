@@ -43,7 +43,12 @@ This project aims to use [graph-gophers/graphql-go](https://github.com/graph-gop
 
 #### Test:
 
-- Run Unit Tests
-    ```
-    make test
-    ```
+Run Unit Tests
+```
+make test
+```
+
+Test coverage
+```
+make coverage
+```
