@@ -28,6 +28,7 @@ func (r *Resolver) CreateUser(ctx context.Context, args *struct {
 	return &userResolver{user}, nil
 }
 
+// LoginUser logs in any user. Public access.
 func (r *Resolver) LoginUser(ctx context.Context, args *struct {
 	Email    string
 	Password string
@@ -35,6 +36,45 @@ func (r *Resolver) LoginUser(ctx context.Context, args *struct {
 	user, err := r.UserService.ComparePassword(args.Email, args.Password)
 	if err != nil {
 		return nil, err
+	}
+
+	ipAddress := ctx.Value("IP").(string)
+
+	err = r.UserService.UpdateLogin(user, ipAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create JWT token
+	exp := time.Now().Add(time.Second * time.Duration(r.TokenTTL)).Unix()
+	token, err := utils.GenerateJWT(exp, r.JWTSecret, user.ID, utils.AuthLevel(user.Role))
+	if err != nil {
+		return nil, err
+	}
+
+	return &userLoginResolver{token}, nil
+}
+
+// LoginAdmin logs in admin users only. Public access.
+func (r *Resolver) LoginAdmin(ctx context.Context, args *struct {
+	Email    string
+	Password string
+}) (*userLoginResolver, error) {
+	// Auth
+	if isAuthorized, err := utils.IsAuthorized(ctx, utils.AuthAnonymous); !isAuthorized {
+		return nil, err
+	}
+
+	user, err := r.UserService.ComparePassword(args.Email, args.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make sure user is admin
+	authLevel := utils.AuthLevel(user.Role)
+
+	if !utils.AuthAdmin.Authorized(authLevel) {
+		return nil, fmt.Errorf("Invalid access")
 	}
 
 	ipAddress := ctx.Value("IP").(string)
