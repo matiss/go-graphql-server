@@ -15,4 +15,4 @@ pool_size = 5
 
 [http]
 address = "127.0.0.1:3035"
-rate_limit = 120.0
+rate_limit = 120

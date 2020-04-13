@@ -1,20 +1,17 @@
 package server
 
 import (
-	"net/http"
-
-	"github.com/labstack/echo/v4"
+	"github.com/gofiber/fiber"
 )
 
-func RootHandler(c echo.Context) error {
-	return c.JSON(
-		http.StatusBadRequest,
+func RootHandler(c *fiber.Ctx) {
+	c.JSON(
 		map[string]interface{}{
 			"message": "Method Not Allowed",
 		},
 	)
 }
 
-func RobotsTXTHandler(c echo.Context) error {
-	return c.String(http.StatusBadRequest, "User-agent: *\nDisallow: /")
+func RobotsTXTHandler(c *fiber.Ctx) {
+	c.Send("User-agent: *\nDisallow: /")
 }

@@ -2,15 +2,14 @@ package server
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"time"
 
-	"github.com/didip/tollbooth"
-	"github.com/didip/tollbooth_echo"
 	graphql "github.com/graph-gophers/graphql-go"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/gofiber/cors"
+	"github.com/gofiber/fiber"
+	"github.com/gofiber/limiter"
+	"github.com/gofiber/logger"
+	"github.com/gofiber/recover"
 
 	"github.com/matiss/go-graphql-server/resolvers"
 	"github.com/matiss/go-graphql-server/schema"
@@ -40,23 +39,39 @@ func Run(configPath string) {
 
 	userService := services.NewUserService(pgService.DB)
 
-	// Create a rate limiter struct.
-	rateLimiter := tollbooth.NewLimiter(config.HTTP.RateLimit, nil)
+	s := fiber.New()
 
-	e := echo.New()
-	e.HideBanner = true
+	// Set prefork
+	s.Settings.Prefork = false
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	// CORS
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAcceptEncoding, echo.HeaderAccessControlMaxAge, echo.HeaderAuthorization},
+	// Recover middleware
+	s.Use(recover.New(recover.Config{
+		// Config is optional
+		Handler: func(c *fiber.Ctx, err error) {
+			c.SendString(err.Error())
+			c.SendStatus(500)
+		},
 	}))
 
+	// Create a rate limiter struct.
+	rateLimiter := limiter.Config{
+		Timeout: 1,
+		Max:     config.HTTP.RateLimit,
+	}
+	s.Use(limiter.New(rateLimiter))
+
+	// CORS middleware
+	corsConfig := cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{"content-type", "Authorization"},
+	}
+	s.Use(cors.New(corsConfig))
+
+	// Logger middleware
+	s.Use(logger.New())
+
 	// Root handler
-	e.GET("/", RootHandler, tollbooth_echo.LimitHandler(rateLimiter))
+	s.Get("/", RootHandler)
 
 	// GraphQL resolver
 	reolver := &resolvers.Resolver{
@@ -73,39 +88,11 @@ func Run(configPath string) {
 	graphqlHandler := NewGraphQLHandler(ctx, &JWTSecret, schema)
 
 	// GraphQL handler
-	e.POST("/query", graphqlHandler.Query, tollbooth_echo.LimitHandler(rateLimiter))
+	s.Post("/query", graphqlHandler.Query)
 
 	// Handle robots.txt file
-	e.GET("/robots.txt", RobotsTXTHandler, tollbooth_echo.LimitHandler(rateLimiter))
+	s.Get("/robots.txt", RobotsTXTHandler)
 
 	// Start server
-	go func() {
-		if err := e.Start(config.HTTP.Address); err != nil {
-			e.Logger.Info("shutting down the server")
-		}
-	}()
-
-	sigs := make(chan os.Signal, 1)
-	cleanupDone := make(chan struct{})
-
-	signal.Notify(sigs, os.Interrupt)
-
-	go func() {
-		<-sigs
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		// Cleanup
-		pgService.Kill()
-
-		// Stop Server
-		if err := e.Shutdown(ctx); err != nil {
-			e.Logger.Fatal(err)
-		}
-
-		close(cleanupDone)
-	}()
-
-	<-cleanupDone
+	s.Listen(config.HTTP.Address)
 }

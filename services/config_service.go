@@ -27,7 +27,7 @@ type pgConfig struct {
 
 type httpEndpointConfig struct {
 	Address   string
-	RateLimit float64 `toml:"rate_limit"`
+	RateLimit int `toml:"rate_limit"`
 }
 
 func (c *ConfigService) Load(file string) error {

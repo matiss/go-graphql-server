@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 
+	"github.com/gofiber/fiber"
 	"github.com/graph-gophers/graphql-go"
-	"github.com/labstack/echo/v4"
 
 	"github.com/matiss/go-graphql-server/utils"
 )
@@ -26,7 +26,7 @@ func NewGraphQLHandler(ctx context.Context, jwtSecret *[]byte, schema *graphql.S
 	return &handler
 }
 
-func (h *GraphQLHandler) Query(c echo.Context) error {
+func (h *GraphQLHandler) Query(c *fiber.Ctx) {
 	ctx := h.ctx
 
 	var params struct {
@@ -35,18 +35,19 @@ func (h *GraphQLHandler) Query(c echo.Context) error {
 		Variables     map[string]interface{} `json:"variables"`
 	}
 
-	if err := c.Bind(&params); err != nil {
-		return err
+	if err := c.BodyParser(&params); err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	// Extract JWT token from Header and authenticate
-	ctx = utils.SetAuth(ctx, c.Request().Header.Get("Authorization"), h.jwtSecret)
+	ctx = utils.SetAuth(ctx, c.Get("Authorization"), h.jwtSecret)
 
 	// Set context values
-	ctx = context.WithValue(ctx, "IP", c.RealIP())
+	ctx = context.WithValue(ctx, "IP", c.IP())
 
 	// Handle query
 	response := h.schema.Exec(ctx, params.Query, params.OperationName, params.Variables)
 
-	return c.JSON(http.StatusOK, response)
+	c.JSON(response)
 }
