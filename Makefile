@@ -1,4 +1,4 @@
-.PHONY: build build-migrations run test migrate schema coverage fmt doc
+.PHONY: build build-migrations build-docker run run-docker test migrate schema coverage fmt doc
 
 ifndef VERBOSE
 MAKEFLAGS+=--no-print-directory
@@ -36,8 +36,14 @@ build-migrations:
 	CGO_ENABLED=0 go build $(LDFLAGS) -v -o ./dist/migrations $(SRCS_MIGRATIONS)
 	-@$(ECHO) "\n\033[1;32mCONGRATULATIONS COMRADE!\033[0;32m\nDone!\033[0m\n"
 
+build-docker:
+	docker build -t $(PACKAGE_NAME) .
+
 run:
 	go run ./cmd/server/main.go -c ./config/server.toml -D
+
+run-docker:
+	docker run -d -p 3035:3035 $(PACKAGE_NAME)
 
 test:
 	-@$(ECHO) "\n\033[0;35m%%% Running tests\033[0m"

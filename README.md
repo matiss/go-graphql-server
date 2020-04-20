@@ -26,7 +26,7 @@ This project aims to use [graph-gophers/graphql-go](https://github.com/graph-gop
 
 2. Install go-bindata
     ```
-    go get -u github.com/go-bindata/go-bindata...
+    go get -u github.com/go-bindata/go-bindata/...
     ```
 
 3. Run the following command at root directory to generate Go code from .graphql file
@@ -39,6 +39,17 @@ This project aims to use [graph-gophers/graphql-go](https://github.com/graph-gop
 4. Start the server (Ensure your postgres database is live and its setting in server.toml is correct)
     ```
     make run
+    ```
+
+#### Docker:
+1. Build docker image. Update config/server.toml configuration file before building image. Make sure server http ports match in config and Dockerfile. Also update postgres configuration.
+    ```
+    make build-docker
+    ```
+
+1. Run docker image
+    ```
+    make run-docker
     ```
 
 #### Test:
