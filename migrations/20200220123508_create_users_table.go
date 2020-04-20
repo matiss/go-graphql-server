@@ -15,7 +15,7 @@ func init() {
 				password VARCHAR(60) NOT NULL,
 				number VARCHAR(50),
 				status SMALLINT DEFAULT 0,
-				role SMALLINT NOT NULLL DEFAULT 1,
+				role SMALLINT NOT NULL DEFAULT 1,
 				login_count INT DEFAULT 0,
 				login_ip VARCHAR(45),
 				login_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
