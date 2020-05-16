@@ -1,0 +1,14 @@
+# Ignore git repo and cache
+.git
+.cache
+
+# Ignore local builds
+dist/
+
+# ignore all markdown files (md) beside all README*.md other than README-secret.md
+*.md
+!README*.md
+README-secret.md
+
+# Ignore docker compose cofiguration
+docker-compose.yml
