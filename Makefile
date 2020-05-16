@@ -36,14 +36,21 @@ build-migrations:
 	CGO_ENABLED=0 go build $(LDFLAGS) -v -o ./dist/migrations $(SRCS_MIGRATIONS)
 	-@$(ECHO) "\n\033[1;32mCONGRATULATIONS COMRADE!\033[0;32m\nDone!\033[0m\n"
 
-build-docker:
-	docker build -t $(PACKAGE_NAME) .
-
 run:
 	go run ./cmd/server/main.go -c ./config/server.toml -D
 
+build-docker:
+	docker build -t $(PACKAGE_NAME) .
+
+# Runs docker image in new container
 run-docker:
-	docker run -d -p 3035:3035 $(PACKAGE_NAME)
+	docker run -d -p 3035:3035 --name $(PACKAGE_NAME) $(PACKAGE_NAME)
+
+start-docker:
+	docker start $(PACKAGE_NAME)
+
+stop-docker:
+	docker stop $(PACKAGE_NAME)
 
 test:
 	-@$(ECHO) "\n\033[0;35m%%% Running tests\033[0m"
